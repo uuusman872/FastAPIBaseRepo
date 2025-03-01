@@ -8,6 +8,7 @@ class ResponseOk(BaseModel):
     status: int = status.HTTP_200_OK
     data: Union[dict, list]
 
+
 class ResponseBad(BaseModel):
     message: str = "Not Found"
     status: int = status.HTTP_404_NOT_FOUND
