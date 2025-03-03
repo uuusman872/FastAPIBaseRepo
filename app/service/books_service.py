@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio.session import AsyncSession
 from schema.books import BookCreateModel, BookUpdateModel
-from models.Books import Book
+from models.models import Book
 from sqlmodel import select, desc
 
 
@@ -9,21 +9,24 @@ class BookService:
         statement = select(Book).order_by(desc(Book.created_at))
         result = await session.execute(statement)
         results = result.scalars().all()
-        # results = [ {"title": result.title, "author": result.author,
-        #              "publisher": result.publisher, "publisher_date": result.publisher_date,
-        #              "page_count": result.page_count, "language": result.page_count, 
-        #              "created_at": result.created_at, "updated_at": result.updated_at} for result in results]
         return results
-
+    
+    async def get_users_books(self, uid, session: AsyncSession):
+        statement = select(Book).where(Book.user_uid == uid).order_by(desc(Book.created_at))
+        result = await session.execute(statement)
+        results = result.scalars().all()
+        return results
+    
     async def get_books(self, book_uid: str, session: AsyncSession):
         statement = select(Book).where(Book.uuid == book_uid)
         result = await session.execute(statement)
         book = result.first()
         return book if book is not None else None
 
-    async def create_book(self, book_data: BookCreateModel, session: AsyncSession):
+    async def create_book(self, book_data: BookCreateModel, user_uid, session: AsyncSession):
         book_data_dict = book_data.model_dump()
         new_book = Book(**book_data_dict)
+        new_book.user_uid = user_uid
         session.add(new_book)
         await session.commit()
         return new_book

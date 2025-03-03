@@ -1,5 +1,5 @@
 from fastapi import APIRouter, status, Depends, HTTPException
-from schema.users import UserCreateModel, UserLoginModel
+from schema.users import UserCreateModel, UserLoginModel, UserModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 from service.users_service import UsersService
 from models.database import get_session
@@ -11,9 +11,12 @@ from datetime import datetime
 from utils.utils import generate_access_token
 from dependencies.users import AccessTokenBearer
 from models.redis_connection import add_jti_to_blocklist
+from dependencies.users import get_current_user
+from dependencies.users import RoleChecker
 
 router = APIRouter()
 service = UsersService()
+role_checker = RoleChecker(allowed_list=["admin", "user"])
 
 
 @router.post("/signup")
@@ -40,8 +43,9 @@ async def login_users(login_form: UserLoginModel, session: AsyncSession = Depend
     password_valid = verify_password(password, user.password)
     if not password_valid:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Incorrect password")
-    access_token = generate_access_token(user_data={"username": user.username, "user_uid": str(user.uid)})
-    refresh_token = generate_access_token(user_data={"username": user.username, "user_uid": str(user.uid)}, refresh=True, expiry=timedelta(days=2))
+    access_token = generate_access_token(user_data={"username": user.username, "user_uid": str(user.uid), "role": user.role})
+    refresh_token = generate_access_token(user_data={"username": user.username, "user_uid": str(user.uid), "role": user.role}, refresh=True, expiry=timedelta(days=2))
+    
     return JSONResponse(content={
         "message": "Login Successful",
         "access_token": access_token,
@@ -65,6 +69,11 @@ async def get_new_access_token(token_details: dict = Depends(RefreshTokenBearer(
         "user": token_details["user"]
     })
     raise HTTPException(detail="refresh token is expired", status_code=status.HTTP_403_FORBIDDEN)
+
+
+@router.get("/me", response_model=UserModel)
+async def get_current_user(user=Depends(get_current_user), _:bool=Depends(RoleChecker(allowed_list=["admin", "user"]))):
+    return user
 
 
 @router.get("/logout")

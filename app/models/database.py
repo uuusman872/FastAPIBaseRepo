@@ -21,7 +21,7 @@ async_engine = AsyncEngine(
 
 async def init_db():
     async with async_engine.begin() as conn:
-        from models.Books import Book
+        from models.models import Book
         await conn.run_sync(SQLModel.metadata.create_all)
 
 
