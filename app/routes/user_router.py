@@ -1,5 +1,5 @@
 from fastapi import APIRouter, status, Depends, HTTPException
-from schema.users import UserCreateModel, UserLoginModel, UserModel
+from schema.users import UserCreateModel, UserLoginModel, UserModel, UserBookModel
 from sqlmodel.ext.asyncio.session import AsyncSession
 from service.users_service import UsersService
 from models.database import get_session
@@ -71,7 +71,7 @@ async def get_new_access_token(token_details: dict = Depends(RefreshTokenBearer(
     raise HTTPException(detail="refresh token is expired", status_code=status.HTTP_403_FORBIDDEN)
 
 
-@router.get("/me", response_model=UserModel)
+@router.get("/me", response_model=UserBookModel)
 async def get_current_user(user=Depends(get_current_user), _:bool=Depends(RoleChecker(allowed_list=["admin", "user"]))):
     return user
 

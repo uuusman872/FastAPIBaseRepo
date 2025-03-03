@@ -18,10 +18,25 @@ class BookService:
         return results
     
     async def get_books(self, book_uid: str, session: AsyncSession):
-        statement = select(Book).where(Book.uuid == book_uid)
+        statement = select(Book).where(Book.uid == book_uid)
         result = await session.execute(statement)
         book = result.first()
-        return book if book is not None else None
+        if book:
+            book = book[0]
+            books_data = {
+                "title": book.title,
+                "publisher": book.author,
+                "page_count": book.page_count,
+                "language": book.language,
+                "created_at": book.created_at,
+                "updated_at": book.updated_at,
+                "uid": book.uid,
+                "author": book.author,
+                "publisher_date": book.publisher_date,
+                "user_uid": book.user_uid,
+                "reviews": book.reviews
+            }
+        return books_data if books_data is not None else None
 
     async def create_book(self, book_data: BookCreateModel, user_uid, session: AsyncSession):
         book_data_dict = book_data.model_dump()

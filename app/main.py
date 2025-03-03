@@ -4,7 +4,7 @@ from fastapi import FastAPI, Header, status
 from baseModels import ResponseBad, ResponseOk
 from contextlib import asynccontextmanager
 from models.database import init_db
-from routes import books_route, user_router
+from routes import books_route, user_router, reviews_router
 
 @asynccontextmanager
 async def life_span(app:FastAPI):
@@ -22,6 +22,7 @@ app = FastAPI(
 
 app.include_router(books_route.router, prefix="/api/v1/books", tags=["Books"])
 app.include_router(user_router.router, prefix="/api/v1/users", tags=["Users"])
+app.include_router(reviews_router.router, prefix="/api/v1/review", tags=["reviews"])
 
 
 if __name__ == "__main__":

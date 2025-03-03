@@ -10,7 +10,8 @@ book_service = BookService()
 user_service = UsersService()
 class ReviewService:
     async def add_review_to_book(
-            user_email: str,
+            self,
+            username: str,
             book_uid: str,
             review_date: ReviewCreatedModel,
             session: AsyncSession
@@ -21,7 +22,7 @@ class ReviewService:
                 session=session
             )
             user = await user_service.get_user_by_email(
-                username=user_email,
+                username=username,
                 session=session
             )
             if not book:
@@ -36,9 +37,10 @@ class ReviewService:
                 **review_data_dict
             )
             new_review.user = user
-            new_review.book = book
+            new_review.book = book[0]
             session.add(new_review)
             await session.commit()
+            await session.refresh(new_review)
             return new_review
         except Exception as e:
             raise HTTPException(status_code=500, detail="Ops something went wrong")

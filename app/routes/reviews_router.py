@@ -7,24 +7,26 @@ from typing import List
 from dependencies.users import AccessTokenBearer
 from dependencies.users import RoleChecker
 from models.models import User
-from schema.review import ReviewCreatedModel
+from schema.review import ReviewCreatedModel, ReviewModel
 from service.reviews_service import ReviewService
+from dependencies.users import get_current_user
 
-review_router = APIRouter()
+router = APIRouter()
 
 review_service = ReviewService()
 
-@review_router.get("/book/{book_uid}")
+@router.post("/book/{book_uid}")
 async def add_review_to_book(
-    book_uid: str, current_user: User, 
-    review_data: ReviewCreatedModel, 
+    book_uid: str, review_data: ReviewCreatedModel, 
+    current_user: User=Depends(get_current_user),
     session: AsyncSession=Depends(get_session)
 ):
-    review_service.add_review_to_book(
-        user_email=current_user.username,
-        review_data=review_data,
+    username = current_user.username
+    new_review = await review_service.add_review_to_book(
+        username="uuusman872",
+        review_date=review_data,
         book_uid=book_uid,
         session=session      
     )
-    return review_service
+    return new_review
 

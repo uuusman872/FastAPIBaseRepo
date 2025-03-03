@@ -3,6 +3,7 @@ import uuid
 from datetime import datetime
 from typing import List
 from schema.books import Book
+from schema.review import ReviewModel
 
 class UserCreateModel(BaseModel):
     username: str
@@ -23,6 +24,9 @@ class UserModel(BaseModel):
     updated_at: datetime
     books: List[Book]
 
+class UserBookModel(UserModel):
+    books: List[Book]
+    reviews: List[ReviewModel]
 
 class UserLoginModel(BaseModel):
     email: str
